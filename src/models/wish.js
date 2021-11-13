@@ -1,0 +1,51 @@
+const mongoose = require('mongoose')
+
+const Wish = mongoose.model('Wish',new mongoose.Schema({
+    title:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    description:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    minAge: {
+        type: Number,
+        required: true
+    },
+    maxAge: {
+        type: Number,
+        required: true
+    },
+    relation: {
+        type: String,
+        enum: ['friend', 'brother', 'father','mother','cousin','sister','son','daughter','grandfather',
+                'grandmother','aunt','uncle','girlfriend','boyfriend','husband','wife','grandson','granddaughter',
+                'niece','nephew','father-in-law','mother-in-law','sister-in-law','son-in-law','daughter-in-law',
+                'bride','groom','student','teacher','neighbour'],
+        required: true,
+        trim: true
+    },
+    ocassion: {
+        type: String,
+        enum: ['new year','birthday','diwali','holi','christmas','farewell','anniversary(marrige)','propose',
+                'anniversary(job)',],
+        required: true,
+        trim: true
+    },
+    save: {
+        type: Number,
+        default: 0
+    },
+    creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
+    }
+},{
+    timestamps: true
+}))
+
+module.exports = Wish
