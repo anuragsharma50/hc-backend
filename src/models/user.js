@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    referral: {
+    referralcode: {
         type: String,
         unique: true,
         sparse: true,
@@ -65,6 +65,9 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    saved: {
+        type: [String]
+    },
     tokens: [{
         token: {
             type: String,
@@ -75,6 +78,12 @@ const userSchema = new mongoose.Schema({
 
 userSchema.virtual('wishes',{
     ref: 'Wish',
+    localField: '_id',
+    foreignField: 'creator'
+})
+
+userSchema.virtual('celebration',{
+    ref: 'Celebration',
     localField: '_id',
     foreignField: 'creator'
 })

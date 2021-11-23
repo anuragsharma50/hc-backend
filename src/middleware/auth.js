@@ -3,14 +3,9 @@ const User = require('../models/user')
 
 const auth = async (req,res,next) => {
     try{
-        // const token = req.header('Authorization').replace('Bearer ','')
         const token = req.cookies.jwt
-        console.log(token)
         const decoded = jwt.verify(token,process.env.JWT_SECRET_KEY)
-        console.log("checkpomt3")
         const user = await User.findOne({ _id: decoded._id, 'tokens.token':token})
-
-        console.log("checkpomt4")
 
         if(!user){
             throw new Error()
@@ -23,5 +18,24 @@ const auth = async (req,res,next) => {
         res.status(401).send({ error: 'Please Authanticate.' })
     }
 }
+
+// const auth = async (req,res,next) => {
+//     try{
+//         const token = req.header('Authorization').replace('Bearer ','')
+//         // const token = req.cookies.jwt
+//         const decoded = jwt.verify(token,process.env.JWT_SECRET_KEY)
+//         const user = await User.findOne({ _id: decoded._id, 'tokens.token':token})
+
+//         if(!user){
+//             throw new Error()
+//         }
+
+//         req.token = token
+//         req.user= user
+//         next()
+//     } catch(e) {
+//         res.status(401).send({ error: 'Please Authanticate.' })
+//     }
+// }
 
 module.exports = auth

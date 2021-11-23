@@ -4,6 +4,10 @@ const auth = require('../middleware/auth')
 const referralCodes = require('referral-codes')
 const router = new express.Router()
 
+const Wish = require('../models/wish')
+const Celebration = require('../models/celebration')
+const Gift = require('../models/gift')
+
 // router.post('/', async (req,res) => {
 //     const user = new User(req.body)
     
@@ -26,38 +30,101 @@ const router = new express.Router()
 //     }
 // })
 
-router.post('/logout',auth,async(req,res) => {
+// router.get('/me',auth, async (req,res) => {
+//     res.send(req.user)
+// })
+
+// Unsave idea
+router.get('/unsave/:id',auth,async(req,res) => {
     try{
-        req.user.tokens = req.user.tokens.filter(token => {
-            return token.token !== req.token
+        req.user.saved = req.user.saved.filter(save => {
+            return save !== req.params.id
         })
+        
         await req.user.save()
-
-        res.send()
-    } catch(e) {
-        res.status(500).send()
-    }
-})
-
-router.post('/logoutAll',auth,async(req,res) => {
-    try{
-        req.user.tokens = []
-        await req.user.save()
-
-        res.send()
+        res.send("Idea Unsaved Successfully")
+        
     } catch(e){
         res.status(500).send()
     }
 })
 
+//get saved ideas
+router.get('/saved',auth, async(req,res) => {
+    try {
+        const savedWishes = await Wish.find({
+            _id: { $in: req.user.saved}
+        },{budget:1,description:1,maxAge:1,minAge:1,ocassion:1,relation:1,title:1,_id:1})
+
+        if(savedWishes.length ===  req.user.saved.length){
+            res.send(savedWishes)
+        }
+
+        savedWishes.forEach(item => {
+            const index = req.user.saved.indexOf(item._id)
+            req.user.saved.splice(index,1)
+        })
+
+        const savedCelebrationIdeas = await Celebration.find({
+            _id: { $in: req.user.saved}
+        },{budget:1,description:1,maxAge:1,minAge:1,ocassion:1,relation:1,title:1,_id:1})
+
+        if(savedCelebrationIdeas.length ===  req.user.saved.length){
+            res.send([...savedCelebrationIdeas,...savedWishes])
+        }
+
+        savedCelebrationIdeas.forEach(item => {
+            const index = req.user.saved.indexOf(item._id)
+            req.user.saved.splice(index,1)
+        })
+
+        const savedGiftIdeas = await Gift.find({
+            _id: { $in: req.user.saved}
+        },{budget:1,description:1,maxAge:1,minAge:1,ocassion:1,relation:1,title:1,_id:1})
+
+        if(savedGiftIdeas.length ===  req.user.saved.length){
+            res.send([...savedCelebrationIdeas,...savedWishes,...savedGiftIdeas])
+        }
+
+        res.send("Nothing is saved")
+
+    } catch (e) {
+        res.status(500).send()
+    }
+})
+
+// router.post('/logout',auth,async(req,res) => {
+//     try{
+//         req.user.tokens = req.user.tokens.filter(token => {
+//             return token.token !== req.token
+//         })
+//         await req.user.save()
+
+//         res.send()
+//     } catch(e) {
+//         res.status(500).send()
+//     }
+// })
+
+// router.post('/logoutAll',auth,async(req,res) => {
+//     try{
+//         req.user.tokens = []
+//         await req.user.save()
+
+//         res.send()
+//     } catch(e){
+//         res.status(500).send()
+//     }
+// })
+
 router.post('/payment',auth,async(req,res) => {
     try{
-        if(!req.user.referral){
+        if(!req.user.referralcode){
             const code = referralCodes.generate({
                 length: 6
             })
-            const referral = code[0]
-            await req.user.updateOne({ referral,payment:true,referred:true })
+            const referralcode = code[0]
+            await req.user.updateOne({ referralcode,payment:true,referred:true })
         } else{
             await req.user.updateOne({ payment:true })
         }
@@ -72,15 +139,15 @@ router.post('/payment',auth,async(req,res) => {
 
 router.post('/referral',auth,async(req,res) => {
     try{
-        if(req.user.referral === req.body.referral){
-            return res.status(400).send({error: "You can't use your own referral"})
+        if(req.user.referralcode === req.body.referralcode){
+            return res.status(400).send({error: "You can't use your own referral code"})
         }
 
         if(req.user.referred){
             return res.status(400).send({error: "Sorry, you have already availed the offer!"})
         }
 
-        const referredBy = await User.findOne({ referral:req.body.referral })
+        const referredBy = await User.findOne({ referralcode:req.body.referralcode })
         
         if(!referredBy){
             return res.status(400).send({error: "Invalid Code"})
@@ -109,14 +176,10 @@ router.post('/referral',auth,async(req,res) => {
 //     }
 // })
 
-router.get('/me',auth, async (req,res) => {
-    res.send(req.user)
-})
-
 router.patch('/me',auth, async (req,res) => {
 
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['email','password','age','gender']
+    const allowedUpdates = ['username','password','age','gender']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
     if(!isValidOperation){

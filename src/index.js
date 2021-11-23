@@ -1,6 +1,9 @@
 const express = require('express')
 require('./db/mongoose')
 const userRoutes = require('./routers/user')
+const wishRoutes = require('./routers/wish')
+const celebrationRoutes = require('./routers/celebration')
+const giftRoutes = require('./routers/gift')
 const authRoutes = require('./routers/auth-router')
 // const taskRoutes = require('./routers/task')
 const passport = require('passport')
@@ -20,7 +23,10 @@ app.use(cors({
 app.use(cookieParser())
 app.use(express.json())
 app.use('/users', userRoutes)
-app.use('/auth', authRoutes);
+app.use('/wish', wishRoutes)
+app.use('/celebration', celebrationRoutes)
+app.use('/gift', giftRoutes)
+app.use('/auth', authRoutes)
 // app.use(taskRouter)
 
 app.listen(port,() => {

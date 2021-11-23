@@ -13,7 +13,7 @@ router.post('/signup', async (req,res) => {
     try{
         await user.save()
         const token = await user.generateAuthToken()
-        currentUser = {user,token}
+        currentUser = {...user.doc,token}
         res.status(201).send('Signup successfully')
     }catch(e){
         res.status(400).json({message: "This email is already taken. Please log in."})
@@ -25,7 +25,7 @@ router.post('/signin', async (req,res) => {
     try {
         const user = await User.findByCrediantials(req.body.email,req.body.password)
         const token = await user.generateAuthToken()
-        currentUser = {user,token}
+        currentUser = {...user.doc,token}
         res.send('Successfully logged in')
     } catch (e) {
         res.status(401).json({message: e.message})
@@ -33,8 +33,10 @@ router.post('/signin', async (req,res) => {
 })
 
 // auth logout
-router.get('/signout', (req, res) => {
+router.get('/signout',auth, async (req, res) => {
     if(req.cookies.jwt) {
+        req.user.tokens = req.user.tokens.filter(token => { return token.token !== req.token })
+        await req.user.save()
         currentUser = null
         req.logOut()
         res.status(202).clearCookie('jwt').send("Logout successfull")
@@ -43,6 +45,18 @@ router.get('/signout', (req, res) => {
         res.status(401).json({ error: 'login karle yaar' })
     }
 });
+
+// auth logout
+// router.get('/signout', (req, res) => {
+//     if(req.cookies.jwt) {
+//         currentUser = null
+//         req.logOut()
+//         res.status(202).clearCookie('jwt').send("Logout successfull")
+//     }
+//     else{
+//         res.status(401).json({ error: 'login karle yaar' })
+//     }
+// });
 
 // auth with google+
 router.get('/google', passport.authenticate('google',{
@@ -84,8 +98,10 @@ router.get('/getuser',async (req,res) => {
         res.status(200).send(currentUser)
     }
     else if(currentUser){
+        const token = currentUser.token
+        delete currentUser.token
         res.status(201)
-        .cookie('jwt', currentUser.token, {
+        .cookie('jwt', token, {
             sameSite: 'strict',
             path: '/',
             expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),

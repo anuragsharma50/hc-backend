@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const Wish = mongoose.model('Wish',new mongoose.Schema({
+const Gift = mongoose.model('Gift',new mongoose.Schema({
     title:{
         type: String,
         required: true,
@@ -58,4 +58,4 @@ const Wish = mongoose.model('Wish',new mongoose.Schema({
     timestamps: true
 }))
 
-module.exports = Wish
+module.exports = Gift
