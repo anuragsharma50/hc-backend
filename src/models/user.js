@@ -83,7 +83,13 @@ userSchema.virtual('wishes',{
 })
 
 userSchema.virtual('celebration',{
-    ref: 'Celebration',
+    ref: 'celebration',
+    localField: '_id',
+    foreignField: 'creator'
+})
+
+userSchema.virtual('gift',{
+    ref: 'Gift',
     localField: '_id',
     foreignField: 'creator'
 })

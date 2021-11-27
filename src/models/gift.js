@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const Gift = mongoose.model('Gift',new mongoose.Schema({
+const giftSchema = new mongoose.Schema({
     title:{
         type: String,
         required: true,
@@ -45,6 +45,15 @@ const Gift = mongoose.model('Gift',new mongoose.Schema({
         type: Number,
         default: 0
     },
+    approvedStatus: {
+        type: String,
+    },
+    approvedBy: {
+        type: [{
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+        }]
+    },
     totalSave: {
         type: Number,
         default: 0
@@ -56,6 +65,17 @@ const Gift = mongoose.model('Gift',new mongoose.Schema({
     }
 },{
     timestamps: true
-}))
+})
+
+giftSchema.methods.toJSON = function () {
+    const user = this
+    const userObject = user.toObject()
+
+    delete userObject.creator
+
+    return userObject
+}
+
+const Gift = mongoose.model('Gift',giftSchema)
 
 module.exports = Gift

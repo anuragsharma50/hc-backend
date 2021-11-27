@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const Wish = mongoose.model('Wish',new mongoose.Schema({
+const wishSchema = new mongoose.Schema({
     title:{
         type: String,
         required: true,
@@ -45,6 +45,15 @@ const Wish = mongoose.model('Wish',new mongoose.Schema({
         type: Number,
         default: 0
     },
+    approvedStatus: {
+        type: String,
+    },
+    approvedBy: {
+        type: [{
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+        }]
+    },
     totalSave: {
         type: Number,
         default: 0
@@ -56,6 +65,18 @@ const Wish = mongoose.model('Wish',new mongoose.Schema({
     }
 },{
     timestamps: true
-}))
+})
+
+wishSchema.methods.toJSON = function () {
+    const user = this
+    const userObject = user.toObject()
+
+    delete userObject.creator
+
+    return userObject
+}
+
+const Wish = mongoose.model('Wish',wishSchema)
+
 
 module.exports = Wish

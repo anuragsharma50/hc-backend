@@ -34,6 +34,37 @@ const Gift = require('../models/gift')
 //     res.send(req.user)
 // })
 
+router.get('/myideas',auth, async (req,res) => {
+    try {
+        await req.user.populate({
+            path: 'wishes',
+            options: {
+                sort : { createdAt: -1 }
+            }
+        })
+
+        await req.user.populate({
+            path: 'celebration',
+            options: {
+                sort : { createdAt: -1 }
+            }
+        })
+
+        await req.user.populate({
+            path: 'gift',
+            options: {
+                sort : { createdAt: -1 }
+            }
+        })
+
+        const {wishes,celebration,gift} = req.user
+
+        res.send([...wishes,...celebration,...gift])
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
 // Unsave idea
 router.get('/unsave/:id',auth,async(req,res) => {
     try{
@@ -86,7 +117,7 @@ router.get('/saved',auth, async(req,res) => {
             res.send([...savedCelebrationIdeas,...savedWishes,...savedGiftIdeas])
         }
 
-        res.send("Nothing is saved")
+        res.status(400).json({error:"Nothing is saved"})
 
     } catch (e) {
         res.status(500).send()
@@ -138,19 +169,22 @@ router.post('/payment',auth,async(req,res) => {
 })
 
 router.post('/referral',auth,async(req,res) => {
+
+    console.log(req.body.referralcode)
+
     try{
         if(req.user.referralcode === req.body.referralcode){
-            return res.status(400).send({error: "You can't use your own referral code"})
+            return res.status(400).json({message: "Invalid code"})
         }
 
         if(req.user.referred){
-            return res.status(400).send({error: "Sorry, you have already availed the offer!"})
+            return res.status(400).json({message: "Sorry, you have already availed the offer!"})
         }
 
         const referredBy = await User.findOne({ referralcode:req.body.referralcode })
         
         if(!referredBy){
-            return res.status(400).send({error: "Invalid Code"})
+            return res.status(400).json({message: "Invalid code"})
         }
 
         const free =  referredBy.free + 1

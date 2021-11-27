@@ -34,6 +34,7 @@ router.get('/count',auth, async (req,res) => {
             maxAge: {$gte: req.query.age},
             gender: { $in: [ req.query.gender,null ] },
             budget: {$lte: req.query.budget}, 
+            approvedStatus: "Approved"
         }).skip((req.query.set - 1)*25 ).limit(25).sort({ gender: -1 })
 
         res.send({ideasCount: wishesCount})
@@ -61,7 +62,8 @@ router.get('/',auth, async (req,res) => {
                 minAge: {$lte: req.query.age},
                 maxAge: {$gte: req.query.age},
                 gender: { $in: [ req.query.gender,null ] },
-                budget: {$lte: req.query.budget}
+                budget: {$lte: req.query.budget},
+                approvedStatus: "Approved"
             },{title:1, description:1, _id:1}
             ).skip((req.query.set - 1)*25 ).limit(25).sort({ gender: -1 })
 
@@ -77,20 +79,20 @@ router.get('/',auth, async (req,res) => {
     }
 })
 
-router.get('/me',auth, async (req,res) => {
-    try {
-        await req.user.populate({
-            path: 'wishes',
-            options: {
-                sort : { createdAt: -1 }
-            }
-        })
+// router.get('/me',auth, async (req,res) => {
+//     try {
+//         await req.user.populate({
+//             path: 'wishes',
+//             options: {
+//                 sort : { createdAt: -1 }
+//             }
+//         })
 
-        res.send(req.user.wishes)
-    } catch (error) {
-        res.status(500).send()
-    }
-})
+//         res.send(req.user.wishes)
+//     } catch (error) {
+//         res.status(500).send()
+//     }
+// })
 
 router.get('/save/:id',auth,async(req,res) => {
     try{

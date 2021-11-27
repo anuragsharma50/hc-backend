@@ -4,6 +4,7 @@ const userRoutes = require('./routers/user')
 const wishRoutes = require('./routers/wish')
 const celebrationRoutes = require('./routers/celebration')
 const giftRoutes = require('./routers/gift')
+const approverRoutes = require('./routers/approver')
 const authRoutes = require('./routers/auth-router')
 // const taskRoutes = require('./routers/task')
 const passport = require('passport')
@@ -26,15 +27,13 @@ app.use('/users', userRoutes)
 app.use('/wish', wishRoutes)
 app.use('/celebration', celebrationRoutes)
 app.use('/gift', giftRoutes)
+app.use('/approver', approverRoutes)
 app.use('/auth', authRoutes)
 // app.use(taskRouter)
 
 app.listen(port,() => {
     console.log("Server is up on port "+port)
 })
-
-
-
 
 // const User = require('./models/user')
 

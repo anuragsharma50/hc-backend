@@ -13,7 +13,7 @@ router.post('/signup', async (req,res) => {
     try{
         await user.save()
         const token = await user.generateAuthToken()
-        currentUser = {...user.doc,token}
+        currentUser = {...user._doc,token}
         res.status(201).send('Signup successfully')
     }catch(e){
         res.status(400).json({message: "This email is already taken. Please log in."})
@@ -25,7 +25,7 @@ router.post('/signin', async (req,res) => {
     try {
         const user = await User.findByCrediantials(req.body.email,req.body.password)
         const token = await user.generateAuthToken()
-        currentUser = {...user.doc,token}
+        currentUser = {...user._doc,token}
         res.send('Successfully logged in')
     } catch (e) {
         res.status(401).json({message: e.message})
@@ -92,8 +92,7 @@ router.get('/getuser',async (req,res) => {
     if(req.cookies.jwt){
         if(!currentUser){
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
-            const user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-            currentUser = user
+            currentUser = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
         }
         res.status(200).send(currentUser)
     }
