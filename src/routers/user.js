@@ -34,6 +34,20 @@ const Gift = require('../models/gift')
 //     res.send(req.user)
 // })
 
+router.post('/currency',auth, async (req,res) => {
+    try {
+        if(!req.user.currency){
+            console.log("here")
+            req.user.currency = req.body.currency
+            await req.user.save()
+        }
+        console.log(req.user.currency)
+        res.status(200).send()
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
 router.get('/myideas',auth, async (req,res) => {
     try {
         await req.user.populate({
@@ -147,6 +161,19 @@ router.get('/saved',auth, async(req,res) => {
 //         res.status(500).send()
 //     }
 // })
+
+router.post('/capturePaypalAmount',auth,async(req,res) => {
+    try {
+        const prePayment = (req.body.amount - 0.5)/1.05
+        
+        await req.user.updateOne({ prePayment: req.user.prePayment + prePayment })
+
+        await req.user.save()
+        res.send("Payment saved successfully")
+    } catch (error) {
+        res.status(500).send()
+    }
+})
 
 router.post('/payment',auth,async(req,res) => {
     try{

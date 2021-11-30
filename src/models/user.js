@@ -48,6 +48,17 @@ const userSchema = new mongoose.Schema({
         enum: ['male','female','other'],
         trim: true,
     },
+    currency: {
+        type: String,
+    },
+    earning: {
+        type: Number,
+        default: 0,
+    },
+    prePayment:{
+        type: Number,
+        default: 0,
+    },
     payment:{
         type: Boolean,
         default: false
