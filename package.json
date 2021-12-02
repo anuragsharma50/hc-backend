@@ -23,7 +23,9 @@
     "passport-amazon": "^1.0.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
+    "razorpay": "^2.8.0",
     "referral-codes": "^1.0.2",
+    "uuid": "^8.3.2",
     "validator": "^13.6.0"
   },
   "devDependencies": {

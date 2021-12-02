@@ -1,3 +1,4 @@
+require("dotenv").config(); 
 const express = require('express')
 require('./db/mongoose')
 const userRoutes = require('./routers/user')
@@ -7,15 +8,16 @@ const giftRoutes = require('./routers/gift')
 const approverRoutes = require('./routers/approver')
 const paypalRoutes = require('./routers/paypal')
 const authRoutes = require('./routers/auth-router')
-// const taskRoutes = require('./routers/task')
+const razorpayRoutes = require('./routers/razorpay')
 const passport = require('passport')
 const cors = require('cors')
 var cookieParser = require('cookie-parser')
+const path = require('path')
 
 const app = express()
 const port = process.env.PORT || 5500
 
-//initizalzing passport
+//initizalzing passport,cors etc.
 app.use(passport.initialize())
 app.use(cors({
     origin: "http://localhost:3000",
@@ -30,28 +32,14 @@ app.use('/celebration', celebrationRoutes)
 app.use('/gift', giftRoutes)
 app.use('/approver', approverRoutes)
 app.use('/paypal', paypalRoutes)
+app.use('/razorpay',razorpayRoutes);
 app.use('/auth', authRoutes)
-// app.use(taskRouter)
+
+// Logo (for Razorpay)
+app.get('/logo.png', (req, res) => {
+	res.sendFile(path.join(__dirname, './assets/logo.png'))
+})
 
 app.listen(port,() => {
     console.log("Server is up on port "+port)
 })
-
-// const User = require('./models/user')
-
-const main = async () => {
-    // const abc = await User.findById('617843f09f44179c07c2f334')
-    // await abc.populate('free')
-    // console.log("user-free",abc.free)
-
-    // const abc = await User.findOne({_id:'6178d7e29d06dff106292a9c'})
-    // console.log("abc",abc)
-
-    // console.log(user)
-    // await user.populate('free')
-    // console.log(user.free)
-    // await user.populate('tasks')
-    // console.log(user.tasks)
-}
-
-// main()
