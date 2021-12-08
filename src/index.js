@@ -9,6 +9,7 @@ const approverRoutes = require('./routers/approver')
 const paypalRoutes = require('./routers/paypal')
 const authRoutes = require('./routers/auth-router')
 const razorpayRoutes = require('./routers/razorpay')
+const stripeRoutes = require('./routers/stripe')
 const passport = require('passport')
 const cors = require('cors')
 var cookieParser = require('cookie-parser')
@@ -33,6 +34,7 @@ app.use('/gift', giftRoutes)
 app.use('/approver', approverRoutes)
 app.use('/paypal', paypalRoutes)
 app.use('/razorpay',razorpayRoutes);
+app.use('/stripe',stripeRoutes);
 app.use('/auth', authRoutes)
 
 // Logo (for Razorpay)

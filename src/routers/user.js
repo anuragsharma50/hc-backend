@@ -1,8 +1,13 @@
+require("dotenv").config()
 const express = require('express')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 const referralCodes = require('referral-codes')
 const router = new express.Router()
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 const Wish = require('../models/wish')
 const Celebration = require('../models/celebration')
@@ -132,7 +137,7 @@ router.get('/saved',auth, async(req,res) => {
         }
 
         res.status(400).json({error:"Nothing is saved"})
-
+        
     } catch (e) {
         res.status(500).send()
     }
@@ -161,6 +166,108 @@ router.get('/saved',auth, async(req,res) => {
 //         res.status(500).send()
 //     }
 // })
+
+// router.post('/verifyotp',auth,async(req,res) => {
+//     try {
+//         if(req.user.otp === req.body.otp){
+//             const user = new User({email:req.user.email,password:req.user.password,
+//                 username:req.user.username})
+//             res.clearCookie('jwt')
+//             const token = await user.generateAuthToken()
+//             res.status(200).cookie('jwt', token, {
+//                 sameSite: 'strict',
+//                 path: '/',
+//                 expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+//                 httpOnly: true,
+//             }).send("Otp verified successfully")
+//         }
+//     } catch (error) {
+//         res.status(500).send()
+//     }
+// })
+
+router.get('/send-otp-again',auth,async(req,res) => {
+
+    try {
+        const otp = referralCodes.generate({ length: 6, charset: "0123456789" })[0]
+        req.user.otp = otp
+        req.user.updatedAt = new Date()
+        await req.user.save()
+
+        const msg = {
+            to: req.user.email,
+            from: 'anuragsh868@gmail.com',
+            subject: 'Sending with SendGrid is Fun',
+            text: 'Hello from Happie Celebrations',
+            html: '<p>Hello from Happie Celebrations</p>',
+            templateId: '97d436d1-6dc8-4473-82ac-5ec8ea9d62df',
+            substitutionWrappers: ['{{', '}}'],
+            substitutions: {
+                otp: req.user.otp,
+            },
+        }
+        sgMail.send(msg).then(() => {
+            console.log('Email sent')
+            res.status(200).send('Email sent')
+        }).catch((error) => {
+            console.error(error)
+        })
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
+router.post('/forgot-password',async(req,res) => {
+    try {
+        const user = await User.findOne({ email:req.body.email })
+
+        const uniqueId = jwt.sign({_id: user._id.toString()}, process.env.JWT_SECRET_KEY_FOR_PASSWORD_RESET)
+ 
+        const msg = {
+            to: 'anuragsh868@gmail.com',
+            from: 'anuragsh868@gmail.com',
+            subject: 'Sending with SendGrid is Fun',
+            text: 'Hello from Happie Celebrations',
+            html: '<p>Hello from Happie Celebrations</p>',
+            templateId: '1c4aa338-826a-4057-9ff4-682fa1cc8a8c',
+            substitutionWrappers: ['{{', '}}'],
+            substitutions: {
+                uniqueId,
+            },
+        }
+        sgMail.send(msg).then(() => {
+            console.log('Email sent')
+            res.status(200).send('Email sent')
+        }).catch((error) => {
+            console.error(error)
+        })
+
+    } catch (error) {
+        res.status(500).json({message: "Couldn't find your Account"})
+    }
+})
+
+router.post('/new-password',async(req,res) => {
+    try {
+        const userId = jwt.verify(req.body.resetToken,process.env.JWT_SECRET_KEY_FOR_PASSWORD_RESET)
+
+        const user = await User.findById(userId)
+
+        const isMatch = await bcrypt.compare(req.body.password,user.password)
+
+        if(isMatch){
+            res.status(403).json({message: "New password can't be same as the old password"})
+        } else{
+            await user.updateOne({ password })
+            await user.save()
+
+            res.status(201).send('Password saved Successfully')
+        }
+
+    } catch (error) {
+        res.status(500).json({message: "Something went Wrong"})
+    }
+})
 
 router.post('/capturePaypalAmount',auth,async(req,res) => {
     try {

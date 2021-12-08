@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.3",
+    "@sendgrid/mail": "^7.6.0",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -25,6 +26,7 @@
     "passport-google-oauth20": "^2.0.0",
     "razorpay": "^2.8.0",
     "referral-codes": "^1.0.2",
+    "stripe": "^8.191.0",
     "uuid": "^8.3.2",
     "validator": "^13.6.0"
   },

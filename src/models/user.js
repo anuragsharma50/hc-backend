@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-// const Task = require('./task')
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -33,20 +32,6 @@ const userSchema = new mongoose.Schema({
     },
     social_provider: {
         type: String,
-    },
-    age: {
-        type: Number,
-        default: 0,
-        validate(value) {
-            if(value < 0) {
-                throw new Error('Age must be a positive number')
-            }
-        }
-    },
-    gender:{
-        type: String,
-        enum: ['male','female','other'],
-        trim: true,
     },
     currency: {
         type: String,
@@ -113,6 +98,7 @@ userSchema.methods.toJSON = function () {
     delete userObject.tokens
     delete userObject.social_id
     delete userObject.social_provider
+    delete userObject._id
 
     return userObject
 }
@@ -131,13 +117,15 @@ userSchema.statics.findByCrediantials = async (email,password) => {
     const user = await User.findOne({ email })
 
     if(!user){
-        throw new Error("Incorrect email or password")
+        // throw new Error("Incorrect email or password")
+        return
     }
 
     const isMatch = await bcrypt.compare(password,user.password)
 
     if(!isMatch){
-        throw new Error("Incorrect email or password")
+        // throw new Error("Incorrect email or password")
+        return
     }
 
     return user
@@ -145,15 +133,15 @@ userSchema.statics.findByCrediantials = async (email,password) => {
 
 
 // Hash the plane text password brfore saving
-userSchema.pre('save', async function(next) {
-    const user = this
+// userSchema.pre('save', async function(next) {
+//     const user = this
 
-    if(user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password,8)
-    }
+//     if(user.isModified('password')) {
+//         user.password = await bcrypt.hash(user.password,8)
+//     }
 
-    next()
-})
+//     next()
+// })
  
 const User = mongoose.model('User',userSchema)
 
