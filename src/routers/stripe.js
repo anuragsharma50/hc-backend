@@ -2,7 +2,6 @@ require("dotenv").config()
 const express = require('express')
 const router = express.Router()
 const auth = require('../middleware/auth')
-const cors = require('cors')
 
 let amount
 
@@ -27,12 +26,11 @@ router.post("/", auth, async (req, res) => {
                     quantity: req.body.set,
                 },
             ],
-            success_url: `http://localhost:3000/success`,
-            cancel_url: `http://localhost:3000/cancel`,
+            success_url: `${process.env.FRONTEND}/success`,
+            cancel_url: `${process.env.FRONTEND}/cancel`,
         })
         amount = session.amount_total / 100
         res.json({ url: session.url })
-        // res.redirect(303, session.url)
     } catch (e) {
         console.log(e)
         res.status(500).json({ error: e.message })

@@ -46,7 +46,6 @@ const userSchema = new mongoose.Schema({
     },
     payment:{
         type: Boolean,
-        default: false
     },
     referralcode: {
         type: String,
@@ -59,10 +58,12 @@ const userSchema = new mongoose.Schema({
     },
     referred: {
         type: Boolean,
-        default: false
     },
     saved: {
         type: [String]
+    },
+    isApprover: {
+        type: Boolean,
     },
     tokens: [{
         token: {
@@ -133,15 +134,15 @@ userSchema.statics.findByCrediantials = async (email,password) => {
 
 
 // Hash the plane text password brfore saving
-// userSchema.pre('save', async function(next) {
-//     const user = this
+userSchema.pre('save', async function(next) {
+    const user = this
 
-//     if(user.isModified('password')) {
-//         user.password = await bcrypt.hash(user.password,8)
-//     }
+    if(user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password,8)
+    }
 
-//     next()
-// })
+    next()
+})
  
 const User = mongoose.model('User',userSchema)
 

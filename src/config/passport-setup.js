@@ -2,7 +2,6 @@ require("dotenv").config();
 const passport = require('passport');
 const User = require('../models/user')
 const referralCodes = require('referral-codes')
-// const jwt = require('jsonwebtoken')
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const AmazonStrategy = require('passport-amazon').Strategy;
@@ -22,7 +21,6 @@ const saveSocialDetails = async (profile) => {
             }).save()
     
             console.log("new user created") 
-            // return done(null,{...user._doc,token})
         }
         else{
             console.log("user exists")
@@ -44,7 +42,6 @@ const saveSocialDetails = async (profile) => {
         delete data.tokens
         delete data.social_id
         delete data.social_provider
-        // console.log(data)
         return data
 }
 
@@ -56,7 +53,6 @@ passport.use(
 
     }, async (accessToken,refreshToken,profile,done) => { 
         const data = await saveSocialDetails(profile)
-        // console.log(data)
         return done(null,data)
     })
 )
@@ -113,7 +109,6 @@ passport.use(new AmazonStrategy({
   },
   async (accessToken, refreshToken, profile, done) => {
     const data = await saveSocialDetails(profile)
-    // console.log(data)
     return done(null,data)
   }
 ));

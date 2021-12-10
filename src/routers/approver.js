@@ -1,17 +1,20 @@
+require("dotenv").config()
 const express = require('express')
 const Approver = require('../models/approver')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 const referralCodes = require('referral-codes')
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const Wish = require('../models/wish')
 const Celebration = require('../models/celebration')
 const Gift = require('../models/gift')
+const User = require('../models/user')
 
+// add user info to db to make him a approver (level 1)
 router.get('/',auth, async (req,res) => {
-
     try {
-
         const alreadyExists = await Approver.findOne({
             userId: req.user._id
         })
@@ -38,6 +41,7 @@ router.get('/',auth, async (req,res) => {
     }
 })
 
+// is a user is a approver 
 router.get('/status',auth, async (req,res) => {
     try {
         let status = await Approver.findOne({
@@ -63,6 +67,7 @@ router.get('/status',auth, async (req,res) => {
     }
 })
 
+// Verify user as approver by entering unique code (level 2)
 router.post('/verify',auth,async(req,res) => {
 
     try{
@@ -136,19 +141,19 @@ router.patch('/approveIdea',auth, async (req,res) => {
             if(req.body.catagory === 'Wish'){
                 idea = await Wish.findOneAndUpdate(
                     { _id: req.body._id },
-                    { approvedStatus: 'Approved',
+                    { approvalStatus: 'Approved',
                       approvedBy: approver._id }
                 )
             } else if(req.body.catagory === 'Celebration'){
                 idea = await Celebration.findOneAndUpdate(
                     { _id: req.body._id },
-                    { approvedStatus: 'Approved',
+                    { approvalStatus: 'Approved',
                       approvedBy: approver._id }
                 )
             } else{
                 idea = await Gift.findOneAndUpdate(
                     { _id: req.body._id },
-                    { approvedStatus: 'Approved',
+                    { approvalStatus: 'Approved',
                       approvedBy: approver._id }
                 )
             }
@@ -157,9 +162,28 @@ router.patch('/approveIdea',auth, async (req,res) => {
                 $inc : { "totalApproved" : 1 }
             })
 
+            const user = await User.findById(idea.creator.toString())
             await idea.save()
             await approver.save()
 
+            const msg = {
+                to: user.email,
+                from: 'anuragsh868@gmail.com',
+                subject: 'Happie Celebration | Idea Approved',
+                text: 'Hello from Happie Celebrations',
+                html: '<p>Hello from Happie Celebrations</p>',
+                templateId: '3f2af504-d905-4435-9cf3-964c23d92b71',
+                substitutionWrappers: ['{{', '}}'],
+                substitutions: {
+                    title: idea.title,
+                    status: idea.approvalStatus
+                },
+            }
+            sgMail.send(msg).then(() => {
+                console.log('Email sent')
+            }).catch((error) => {
+                console.error(error)
+            })
             res.status(200).send()
         }
 
@@ -171,6 +195,7 @@ router.patch('/approveIdea',auth, async (req,res) => {
 // rejected idea 
 router.patch('/rejectIdea',auth, async (req,res) => {
     try {
+        // To Check if the request is done by an approver or not
         const approver = await Approver.findOne({
             userId: req.user._id,
             verified: true
@@ -183,19 +208,19 @@ router.patch('/rejectIdea',auth, async (req,res) => {
             if(req.body.catagory === 'Wish'){
                 idea = await Wish.findOneAndUpdate(
                     { _id: req.body._id },
-                    { approvedStatus: `Rejected: ${req.body.reason}`,
+                    { approvalStatus: `Rejected: ${req.body.reason}`,
                       approvedBy: approver._id }
                 )
             } else if(req.body.catagory === 'Celebration'){
                 idea = await Celebration.findOneAndUpdate(
                     { _id: req.body._id },
-                    { approvedStatus: `Rejected: ${req.body.reason}`,
+                    { approvalStatus: `Rejected: ${req.body.reason}`,
                       approvedBy: approver._id }
                 )
             } else{
                 idea = await Gift.findOneAndUpdate(
                     { _id: req.body._id },
-                    { approvedStatus: `Rejected: ${req.body.reason}`,
+                    { approvalStatus: `Rejected: ${req.body.reason}`,
                       approvedBy: approver._id }
                 )
             }
@@ -204,9 +229,28 @@ router.patch('/rejectIdea',auth, async (req,res) => {
                 $inc : { "totalDiscarded" : 1 }
             })
 
+            const user = await User.findById(idea.creator.toString())
             await idea.save()
             await approver.save()
 
+            const msg = {
+                to: user.email,
+                from: 'anuragsh868@gmail.com',
+                subject: 'Happie Celebration | Idea Rejected',
+                text: 'Hello from Happie Celebrations',
+                html: '<p>Hello from Happie Celebrations</p>',
+                templateId: 'c8a860df-4584-4eed-82cc-a73581098185',
+                substitutionWrappers: ['{{', '}}'],
+                substitutions: {
+                    title: idea.title,
+                    status: idea.approvalStatus
+                },
+            }
+            sgMail.send(msg).then(() => {
+                console.log('Email sent')
+            }).catch((error) => {
+                console.error(error)
+            })
             res.status(200).send()
         }
 
@@ -219,15 +263,15 @@ const fetchUnapprovedIdea = async (catagory) => {
     let idea
     if(catagory === 'Wish'){
         idea = await Wish.findOne({
-            approvedStatus: null
+            approvalStatus: null
         })
     } else if(catagory === 'Celebration'){
         idea = await Celebration.findOne({
-            approvedStatus: null
+            approvalStatus: null
         })
     } else {
         idea = await Gift.findOne({
-            approvedStatus: null
+            approvalStatus: null
         })
     }
 

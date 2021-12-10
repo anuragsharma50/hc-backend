@@ -45,10 +45,10 @@ router.get('/count',auth, async (req,res) => {
 
 router.get('/',auth, async (req,res) => {
     try {
-        // if(!req.user.payment) {
-        //     res.status(401).send('Please complete payment')
-        // }
-        // else{
+        if(!req.user.payment) {
+            res.status(401).send('Please complete payment')
+        }
+        else{
 
             if(!req.query.set){
                 req.query.set = 1
@@ -73,26 +73,11 @@ router.get('/',auth, async (req,res) => {
             }
 
             res.send(wishes)
-        // }
+        }
     } catch (error) {
         res.status(500).send()
     }
 })
-
-// router.get('/me',auth, async (req,res) => {
-//     try {
-//         await req.user.populate({
-//             path: 'wishes',
-//             options: {
-//                 sort : { createdAt: -1 }
-//             }
-//         })
-
-//         res.send(req.user.wishes)
-//     } catch (error) {
-//         res.status(500).send()
-//     }
-// })
 
 router.get('/save/:id',auth,async(req,res) => {
     try{

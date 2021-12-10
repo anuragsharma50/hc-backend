@@ -42,7 +42,7 @@ router.post('/signup', async (req,res) => {
             const msg = {
                 to: tempuser.email,
                 from: 'anuragsh868@gmail.com',
-                subject: 'Sending with SendGrid is Fun',
+                subject: 'Happie Celebration | Verification code',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',
                 templateId: '97d436d1-6dc8-4473-82ac-5ec8ea9d62df',
@@ -89,7 +89,7 @@ router.post('/signin', async (req,res) => {
             const msg = {
                 to: tempuser.email,
                 from: 'anuragsh868@gmail.com',
-                subject: 'Sending with SendGrid is Fun',
+                subject: 'Happie Celebration | Verification code',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',
                 templateId: '97d436d1-6dc8-4473-82ac-5ec8ea9d62df',
@@ -125,18 +125,6 @@ router.get('/signout',auth, async (req, res) => {
     }
 });
 
-// auth logout
-// router.get('/signout', (req, res) => {
-//     if(req.cookies.jwt) {
-//         currentUser = null
-//         req.logOut()
-//         res.status(202).clearCookie('jwt').send("Logout successfull")
-//     }
-//     else{
-//         res.status(401).json({ error: 'login karle yaar' })
-//     }
-// });
-
 // auth with google+
 router.get('/google', passport.authenticate('google',{
     scope: [
@@ -148,7 +136,7 @@ router.get('/google', passport.authenticate('google',{
 // Callback route for google to redirect
 router.get('/google/callback',passport.authenticate('google',{ session: false }),(req,res) => {
     currentUser = req.user
-    res.redirect('http://localhost:3000/')
+    res.redirect(process.env.FRONTEND)
 })
 
 // auth with fb
@@ -158,7 +146,7 @@ router.get('/facebook', passport.authenticate('facebook',{ scope: 'email',sessio
 router.get('/facebook/callback',
     passport.authenticate('facebook',{ session: false }),(req,res) => {
         currentUser = req.user
-        res.redirect('http://localhost:3000/')
+        res.redirect(process.env.FRONTEND)
 });
 
 // auth with amazon
@@ -168,7 +156,7 @@ router.get('/amazon',passport.authenticate('amazon',{ scope: ['profile'],session
 router.get('/amazon/callback', 
   passport.authenticate('amazon', { session: false }),(req, res) => {
     currentUser = req.user
-    res.redirect('http://localhost:3000/');
+    res.redirect(process.env.FRONTEND);
 });
 
 // verify otp

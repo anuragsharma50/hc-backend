@@ -45,10 +45,10 @@ router.get('/count',auth, async (req,res) => {
 
 router.get('/',auth, async (req,res) => {
     try {
-        // if(!req.user.payment) {
-        //     res.status(401).send('Please complete payment')
-        // }
-        // else{
+        if(!req.user.payment) {
+            res.status(401).send('Please complete payment')
+        }
+        else{
 
             if(!req.query.set){
                 req.query.set = 1
@@ -73,7 +73,7 @@ router.get('/',auth, async (req,res) => {
             }
 
             res.send(celebration)
-        // }
+        }
     } catch (error) {
         res.status(500).send()
     }

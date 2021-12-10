@@ -45,7 +45,7 @@ const giftSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    approvedStatus: {
+    approvalStatus: {
         type: String,
     },
     approvedBy: {

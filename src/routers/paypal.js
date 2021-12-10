@@ -1,3 +1,4 @@
+require("dotenv").config()
 const express = require('express')
 const router = new express.Router()
 const auth = require('../middleware/auth')
@@ -10,8 +11,8 @@ const Environment =
 
 const paypalClient = new paypal.core.PayPalHttpClient(
   new Environment(
-    'Ab-INWcD5rn4L0d-Dhr0GqlqcVB3L6Ga3TeWqCpfCCRLJHV3dPj4CncYi62mfwLrWfJXP3VT68H9CqBw',
-    'EOplBzeEpC_9x_WNKIgRbE4dzc4MyRljN8_KJI5t0SHqx74jmBFA4QJKSeXvISKOHTb4H6ekjMOiMVlY'
+    process.env.PAYPAL_KEY,
+    process.env.PAYPAL_SECRET
   )
 )
 
