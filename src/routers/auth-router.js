@@ -12,20 +12,6 @@ const sgMail = require('@sendgrid/mail')
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-// // Username & password signup
-// router.post('/signup', async (req,res) => {
-//     const user = new User(req.body)
-
-//     try{
-//         await user.save()
-//         const token = await user.generateAuthToken()
-//         currentUser = {...user._doc,token}
-//         res.status(201).send('Signup successfully')
-//     }catch(e){
-//         res.status(400).json({message: "This email is already taken. Please log in."})
-//     }
-// })
-
 // Username & password signup
 router.post('/signup', async (req,res) => {
     try{
@@ -41,7 +27,7 @@ router.post('/signup', async (req,res) => {
 
             const msg = {
                 to: tempuser.email,
-                from: 'anuragsh868@gmail.com',
+                from: 'no-reply@happiecelebrations.com',
                 subject: 'Happie Celebration | Verification code',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',
@@ -88,7 +74,7 @@ router.post('/signin', async (req,res) => {
 
             const msg = {
                 to: tempuser.email,
-                from: 'anuragsh868@gmail.com',
+                from: 'no-reply@happiecelebrations.com',
                 subject: 'Happie Celebration | Verification code',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',

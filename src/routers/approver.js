@@ -168,7 +168,7 @@ router.patch('/approveIdea',auth, async (req,res) => {
 
             const msg = {
                 to: user.email,
-                from: 'anuragsh868@gmail.com',
+                from: 'no-reply@happiecelebrations.com',
                 subject: 'Happie Celebration | Idea Approved',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',
@@ -235,7 +235,7 @@ router.patch('/rejectIdea',auth, async (req,res) => {
 
             const msg = {
                 to: user.email,
-                from: 'anuragsh868@gmail.com',
+                from: 'no-reply@happiecelebrations.com',
                 subject: 'Happie Celebration | Idea Rejected',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',
