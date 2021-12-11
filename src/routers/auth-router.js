@@ -212,17 +212,16 @@ router.get('/getuser',async (req,res) => {
             let user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
             if(!user){
                 const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-                if(email){
-                    let email = temp.email
-                    let username = temp.username
-                    let unverified = true
-                    user = {email,username,unverified}
-                }
+                let email = temp.email
+                let username = temp.username
+                let unverified = true
+                user = {email,username,unverified}
             }
+            console.log(user)
             res.status(200).send(user)
         }
         else{
-            res.status(401).json({error: "Please login"})
+            res.status(402).json({error: "Please login"})
         }
     } catch (e) {
         res.status(401).json({error: "Something went wrong"})
