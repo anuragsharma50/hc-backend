@@ -18,6 +18,8 @@ const path = require('path')
 const app = express()
 const port = process.env.PORT || 5500
 
+console.log("Database_URL", process.env.MONGODB_URL)
+
 //initizalzing passport,cors etc.
 app.use(passport.initialize())
 app.use(cors({
