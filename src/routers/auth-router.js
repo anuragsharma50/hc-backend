@@ -206,20 +206,26 @@ router.get('/amazon/callback',
 
 // Get user data
 router.get('/getuser',async (req,res) => {
-    console.log("Hii")
-    if(req.cookies.jwt){
-        const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
-        let user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-        if(!user){
-            const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-            let email = temp.email
-            let username = temp.username
-            let unverified = true
-            user = {email,username,unverified}
+    try {
+        console.log("Hii")
+        if(req.cookies.jwt){
+            const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
+            let user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+            if(!user){
+                const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+                if(email){
+                    let email = temp.email
+                    let username = temp.username
+                    let unverified = true
+                    user = {email,username,unverified}
+                }
+            }
+            res.status(200).send(user)
         }
-        res.status(200).send(user)
-    }
-    else{
+        else{
+            res.status(401).json({error: "Please login"})
+        }
+    } catch (error) {
         res.status(401).json({error: "Please login"})
     }
 })
