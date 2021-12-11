@@ -198,10 +198,11 @@ router.get('/getuser',async (req,res) => {
         delete currentUser._id
         res.status(200)
         .cookie('jwt', token, {
-            sameSite: 'strict',
+            sameSite:'None', 
             path: '/',
             expires: expireTime,
             httpOnly: true,
+            secure: true,
         }).send(currentUser)
     }
     else{
