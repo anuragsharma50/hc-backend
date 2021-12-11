@@ -209,7 +209,9 @@ router.get('/getuser',async (req,res) => {
     try {
         if(req.cookies.jwt){
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
-            let user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+            let user = null
+            user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+            console.log(user)
             if(!user){
                 const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
                 let email = temp.email
@@ -217,7 +219,6 @@ router.get('/getuser',async (req,res) => {
                 let unverified = true
                 user = {email,username,unverified}
             }
-            console.log(user)
             res.status(200).send(user)
         }
         else{
