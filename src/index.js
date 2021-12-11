@@ -21,7 +21,7 @@ const port = process.env.PORT || 5500
 //initizalzing passport,cors etc.
 app.use(passport.initialize())
 app.use(cors({
-    origin: 'https://www.happiecelebrations.com',
+    origin: process.env.FRONTEND,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
 }))
