@@ -207,7 +207,6 @@ router.get('/amazon/callback',
 // Get user data
 router.get('/getuser',async (req,res) => {
     try {
-        console.log("Hii")
         if(req.cookies.jwt){
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
             let user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
@@ -225,8 +224,8 @@ router.get('/getuser',async (req,res) => {
         else{
             res.status(401).json({error: "Please login"})
         }
-    } catch (error) {
-        res.status(401).json({error: "Please login"})
+    } catch (e) {
+        res.status(401).json({error: "Something went wrong"})
     }
 })
 
