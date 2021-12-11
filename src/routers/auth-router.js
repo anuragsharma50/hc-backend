@@ -6,7 +6,6 @@ const Temp = require('../models/temp')
 const auth = require('../middleware/auth')
 const passportSetup = require('../config/passport-setup')
 const jwt = require('jsonwebtoken')
-let currentUser = null
 const referralCodes = require('referral-codes')
 const sgMail = require('@sendgrid/mail')
 
@@ -23,7 +22,6 @@ router.post('/signup', async (req,res) => {
             const tempuser = new Temp({...req.body,otp})
             await tempuser.save()
             const token = await tempuser.generateAuthToken()
-            currentUser = {...tempuser._doc,token,unverified:true}
 
             const msg = {
                 to: tempuser.email,
@@ -43,7 +41,14 @@ router.post('/signup', async (req,res) => {
                 console.error(error)
             })
 
-            res.status(201).send('Signup successfully')
+            res.status(201)
+            .cookie('jwt', token, {
+                sameSite:'None', 
+                path: '/',
+                expires: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+                httpOnly: true,
+                secure: true,
+            }).send("Signup successfully")
         }
     }catch(e){
         res.status(400).json({message: "You already have an account with this email. Please log in."})
@@ -53,15 +58,17 @@ router.post('/signup', async (req,res) => {
 // username and password signin
 router.post('/signin', async (req,res) => {
     try {
-        let user
-        try {
-            user = await User.findByCrediantials(req.body.email,req.body.password)
-        } catch (error) {
-            console.log(error)
-        }
+        const user = await User.findByCrediantials(req.body.email,req.body.password)
         if(user){
             const token = await user.generateAuthToken()
-            currentUser = {...user._doc,token}
+            res.status(200)
+            .cookie('jwt', token, {
+                sameSite:'None', 
+                path: '/',
+                expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+                httpOnly: true,
+                secure: true,
+            }).send("Successfully logged in")
         }
         else {
             const tempuser = await Temp.findByCrediantials(req.body.email,req.body.password)
@@ -70,7 +77,6 @@ router.post('/signin', async (req,res) => {
             tempuser.otp = otp
             tempuser.updatedAt = new Date()
             await tempuser.save()
-            currentUser = {...tempuser._doc,token,unverified:true}
 
             const msg = {
                 to: tempuser.email,
@@ -90,8 +96,15 @@ router.post('/signin', async (req,res) => {
                 console.error(error)
             })
 
+            res.status(200)
+            .cookie('jwt', token, {
+                sameSite:'None', 
+                path: '/',
+                expires: new Date(new Date(tempuser.createdAt).getTime() + 24 * 60 * 60 * 1000),
+                httpOnly: true,
+                secure: true,
+            }).send("Successfully logged in")
         }
-        res.send('Successfully logged in')
     } catch (e) {
         res.status(401).json({message: "Email or password is incorrect"})
     }
@@ -102,47 +115,12 @@ router.get('/signout',auth, async (req, res) => {
     if(req.cookies.jwt) {
         req.user.tokens = req.user.tokens.filter(token => { return token.token !== req.token })
         await req.user.save()
-        currentUser = null
         req.logOut()
         res.status(202).clearCookie('jwt').send("Logout successfull")
     }
     else{
         res.status(401).json({ error: 'Something went wrong' })
     }
-});
-
-// auth with google+
-router.get('/google', passport.authenticate('google',{
-    scope: [
-        'https://www.googleapis.com/auth/userinfo.profile',
-        'https://www.googleapis.com/auth/userinfo.email'
-    ],session: false
-}));
-
-// Callback route for google to redirect
-router.get('/google/callback',passport.authenticate('google',{ session: false }),(req,res) => {
-    currentUser = req.user
-    res.redirect(process.env.FRONTEND)
-})
-
-// auth with fb
-router.get('/facebook', passport.authenticate('facebook',{ scope: 'email',session: false }));
-
-// Callback route for fb to redirect
-router.get('/facebook/callback',
-    passport.authenticate('facebook',{ session: false }),(req,res) => {
-        currentUser = req.user
-        res.redirect(process.env.FRONTEND)
-});
-
-// auth with amazon
-router.get('/amazon',passport.authenticate('amazon',{ scope: ['profile'],session: false }));
-
-// Callback route for amazon to redirect
-router.get('/amazon/callback', 
-  passport.authenticate('amazon', { session: false }),(req, res) => {
-    currentUser = req.user
-    res.redirect(process.env.FRONTEND);
 });
 
 // verify otp
@@ -154,11 +132,18 @@ router.post('/verifyotp',auth,async(req,res) => {
         }
         else if(req.user.otp === req.body.otp){
             const user = new User({email:req.user.email,password:req.user.password,
-                username:req.user.username})
+            username:req.user.username})
             res.clearCookie('jwt')
+            
             const token = await user.generateAuthToken()
-            currentUser = {...user._doc,token}
-            res.status(200).send("Otp verified successfully")
+            res.status(200)
+            .cookie('jwt', token, {
+                sameSite:'None', 
+                path: '/',
+                expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+                httpOnly: true,
+                secure: true,
+            }).send("Otp verified successfully")
         }
         else{
             res.status(401).json({message: "Verification code mismatched.Please try again"})
@@ -168,42 +153,71 @@ router.post('/verifyotp',auth,async(req,res) => {
     }
 })
 
+// auth with google+
+router.get('/google', passport.authenticate('google',{
+    scope: [
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email'
+    ],session: false
+}));
+
+// Callback route for google to redirect
+router.get('/google/callback',passport.authenticate('google',{ session: false }),(req,res) => {
+    res.cookie('jwt', req.user.token, {
+        sameSite:'None', 
+        path: '/',
+        expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: true,
+    })
+    res.redirect(process.env.FRONTEND)
+})
+
+// auth with fb
+router.get('/facebook', passport.authenticate('facebook',{ scope: 'email',session: false }));
+
+// Callback route for fb to redirect
+router.get('/facebook/callback',
+    passport.authenticate('facebook',{ session: false }),(req,res) => {
+        res.cookie('jwt', req.user.token, {
+            sameSite:'None', 
+            path: '/',
+            expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+            httpOnly: true,
+            secure: true,
+        })
+        res.redirect(process.env.FRONTEND)
+});
+
+// auth with amazon
+router.get('/amazon',passport.authenticate('amazon',{ scope: ['profile'],session: false }));
+
+// Callback route for amazon to redirect
+router.get('/amazon/callback', 
+  passport.authenticate('amazon', { session: false }),(req, res) => {
+    res.cookie('jwt', req.user.token, {
+        sameSite:'None', 
+        path: '/',
+        expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: true,
+    })
+    res.redirect(process.env.FRONTEND);
+});
+
 // Get user data
 router.get('/getuser',async (req,res) => {
     if(req.cookies.jwt){
-        if(!currentUser){
-            const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
-            currentUser = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-            if(!currentUser){
-                temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-                let email = temp.email
-                let username = temp.username
-                let unverified = true
-                currentUser = {email,username,unverified}
-            }
+        const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
+        let user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+        if(!user){
+            temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+            let email = temp.email
+            let username = temp.username
+            let unverified = true
+            user = {email,username,unverified}
         }
-        res.status(200).send(currentUser)
-    }
-    else if(currentUser){
-        expireTime = currentUser.unverified ? new Date(new Date(currentUser.createdAt).getTime() + 24 * 60 * 60 * 1000)
-            : new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000)
-
-        const token = currentUser.token
-        delete currentUser.token
-        delete currentUser.tokens
-        delete currentUser.otp
-        delete currentUser.createdAt
-        delete currentUser.updatedAt
-        delete currentUser.password
-        delete currentUser._id
-        res.status(200)
-        .cookie('jwt', token, {
-            sameSite:'None', 
-            path: '/',
-            expires: expireTime,
-            httpOnly: true,
-            secure: true,
-        }).send(currentUser)
+        res.status(200).send(user)
     }
     else{
         res.status(401).json({error: "Please login"})

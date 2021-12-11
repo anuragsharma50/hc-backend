@@ -137,7 +137,7 @@ userSchema.statics.findByCrediantials = async (email,password) => {
 userSchema.pre('save', async function(next) {
     const user = this
 
-    if(user.isModified('password')) {
+    if(user.isModified('password') && user.password.length < 10) {
         user.password = await bcrypt.hash(user.password,8)
     }
 
