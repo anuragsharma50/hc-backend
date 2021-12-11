@@ -4,7 +4,6 @@ const passport = require('passport')
 const User = require('../models/user')
 const Temp = require('../models/temp')
 const auth = require('../middleware/auth')
-const passportSetup = require('../config/passport-setup')
 const jwt = require('jsonwebtoken')
 const referralCodes = require('referral-codes')
 const sgMail = require('@sendgrid/mail')
@@ -211,7 +210,7 @@ router.get('/getuser',async (req,res) => {
         const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
         let user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
         if(!user){
-            temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+            const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
             let email = temp.email
             let username = temp.username
             let unverified = true
