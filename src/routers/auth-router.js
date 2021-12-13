@@ -7,6 +7,7 @@ const auth = require('../middleware/auth')
 const jwt = require('jsonwebtoken')
 const referralCodes = require('referral-codes')
 const sgMail = require('@sendgrid/mail')
+const passportSetup = require('../config/passport-setup')
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
@@ -89,11 +90,11 @@ router.post('/signin', async (req,res) => {
                     otp: tempuser.otp,
                 },
             }
-            sgMail.send(msg).then(() => {
-                console.log('Email sent')
-            }).catch((error) => {
-                console.error(error)
-            })
+            // sgMail.send(msg).then(() => {
+            //     console.log('Email sent')
+            // }).catch((error) => {
+            //     console.error(error)
+            // })
 
             res.status(200)
             .cookie('jwt', token, {
@@ -211,7 +212,6 @@ router.get('/getuser',async (req,res) => {
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
             let user = null
             user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-            console.log(user)
             if(!user){
                 const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
                 let email = temp.email
@@ -222,7 +222,7 @@ router.get('/getuser',async (req,res) => {
             res.status(200).send(user)
         }
         else{
-            res.status(402).json({error: "Please login"})
+            res.status(401).json({error: "Please login"})
         }
     } catch (e) {
         res.status(401).json({error: "Something went wrong"})

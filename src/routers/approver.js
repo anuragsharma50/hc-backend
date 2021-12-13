@@ -176,7 +176,7 @@ router.patch('/approveIdea',auth, async (req,res) => {
                 substitutionWrappers: ['{{', '}}'],
                 substitutions: {
                     title: idea.title,
-                    status: idea.approvalStatus
+                    status: 'Approved'
                 },
             }
             sgMail.send(msg).then(() => {
@@ -243,7 +243,7 @@ router.patch('/rejectIdea',auth, async (req,res) => {
                 substitutionWrappers: ['{{', '}}'],
                 substitutions: {
                     title: idea.title,
-                    status: idea.approvalStatus
+                    status: req.body.reason
                 },
             }
             sgMail.send(msg).then(() => {

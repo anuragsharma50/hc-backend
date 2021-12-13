@@ -15,12 +15,22 @@ const Gift = require('../models/gift')
 
 router.get('/myideas',auth, async (req,res) => {
     try {
+
+        let ideas = []
+
         await req.user.populate({
             path: 'wishes',
             options: {
                 sort : { createdAt: -1 }
             }
         })
+
+        if(req.user.wishes){
+            req.user.wishes.forEach((wish) => {
+                wish = {...wish._doc,catagory:'wish'}
+                ideas.push(wish)
+            })
+        }
 
         await req.user.populate({
             path: 'celebration',
@@ -29,6 +39,13 @@ router.get('/myideas',auth, async (req,res) => {
             }
         })
 
+        if(req.user.celebration){
+            req.user.celebration.forEach((celebration) => {
+                celebration = {...celebration._doc,catagory:'celebration'}
+                ideas.push(celebration)
+            })
+        }
+
         await req.user.populate({
             path: 'gift',
             options: {
@@ -36,9 +53,15 @@ router.get('/myideas',auth, async (req,res) => {
             }
         })
 
-        const {wishes,celebration,gift} = req.user
-        if([...wishes,...celebration,...gift].length > 0 ){
-            res.send([...wishes,...celebration,...gift])
+        if(req.user.gift){
+            req.user.gift.forEach((gift) => {
+                gift = {...gift._doc,catagory:'gift'}
+                ideas.push(gift)
+            })
+        }
+
+        if(ideas.length > 0 ){
+            res.send(ideas)
         }else{
             res.status(404).json({message: "You haven't write any idea"})
         }
