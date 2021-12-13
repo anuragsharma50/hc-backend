@@ -18,6 +18,15 @@ const path = require('path')
 const app = express()
 const port = process.env.PORT || 5500
 
+if(process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+      if (req.header('x-forwarded-proto') !== 'https')
+        res.redirect(`https://${req.header('host')}${req.url}`)
+      else
+        next()
+    })
+}
+
 //initizalzing passport,cors etc.
 app.use(passport.initialize())
 app.use(cors({
