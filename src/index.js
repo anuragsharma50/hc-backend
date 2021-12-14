@@ -42,9 +42,13 @@ app.use('/celebration', celebrationRoutes)
 app.use('/gift', giftRoutes)
 app.use('/approver', approverRoutes)
 app.use('/paypal', paypalRoutes)
-app.use('/razorpay',razorpayRoutes);
-app.use('/stripe',stripeRoutes);
+app.use('/razorpay',razorpayRoutes)
+app.use('/stripe',stripeRoutes)
 app.use('/auth', authRoutes)
+
+app.get('/googlef66ca81c055303c3.html', function(req, res){
+    res.sendFile(path.join(__dirname, './googlef66ca81c055303c3.html'))
+});
 
 // Logo (for Razorpay)
 app.get('/logo.png', (req, res) => {
