@@ -247,19 +247,21 @@ router.get('/payment',auth,async(req,res) => {
     try{
         if(req.user.free > 0) {
             free = req.user.free - 1
-            await req.user.updateOne({ payment:true,free })
+            paid = false
+            await req.user.updateOne({ payment:true,free,paid })
 
             await req.user.save()
             res.send()
         } 
         else if(req.user.prePayment > 0){
             prePayment = req.user.prePayment - 1
+            paid = true
             if(!req.user.referralcode){
                 const code = referralCodes.generate({
                     length: 6
                 })
                 const referralcode = code[0]
-                await req.user.updateOne({ referralcode,payment:true,referred:true,prePayment })
+                await req.user.updateOne({ referralcode,payment:true,referred:true,prePayment,paid })
             } else{
                 await req.user.updateOne({ payment:true,prePayment })
             } 
@@ -307,34 +309,34 @@ router.post('/referral',auth,async(req,res) => {
     }
 })
 
-router.patch('/me',auth, async (req,res) => {
+// router.patch('/me',auth, async (req,res) => {
 
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ['username','password','age','gender']
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
+//     const updates = Object.keys(req.body)
+//     const allowedUpdates = ['username','password','age','gender']
+//     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
-    if(!isValidOperation){
-        return res.status(400).send({error: "Invalid Updates!"})
-    }
+//     if(!isValidOperation){
+//         return res.status(400).send({error: "Invalid Updates!"})
+//     }
 
-    try {
-        updates.forEach((update) => req.user[update] = req.body[update])
-        await req.user.save()
-        res.send(req.user)
-    } catch (error) {
-        res.status(400).send(e)
-    }
+//     try {
+//         updates.forEach((update) => req.user[update] = req.body[update])
+//         await req.user.save()
+//         res.send(req.user)
+//     } catch (error) {
+//         res.status(400).send(e)
+//     }
 
-})
+// })
 
-router.delete('/me',auth, async (req,res) =>{
-    try {
-        await req.user.remove()
-        res.send(req.user)
-    } catch (error) {
-        res.status(500).send(error)
-    }
-})
+// router.delete('/me',auth, async (req,res) =>{
+//     try {
+//         await req.user.remove()
+//         res.send(req.user)
+//     } catch (error) {
+//         res.status(500).send(error)
+//     }
+// })
 
 
 module.exports = router

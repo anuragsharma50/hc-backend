@@ -56,6 +56,12 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 1,
     },
+    paid: {
+        type: Boolean,
+    },
+    orderid:{
+        type: String,
+    },
     referred: {
         type: Boolean,
     },
@@ -100,6 +106,7 @@ userSchema.methods.toJSON = function () {
     delete userObject.social_id
     delete userObject.social_provider
     delete userObject._id
+    delete userObject.orderid
 
     return userObject
 }

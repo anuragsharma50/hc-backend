@@ -84,7 +84,9 @@ router.get('/save/:id',auth,async(req,res) => {
         const alreadySaved = req.user.saved.includes(req.params.id)
 
         if(alreadySaved){
-            res.status(400).send("Already saved")
+            res.status(400).json({message: "Already saved"})
+        } else if(!req.user.paid){
+            res.status(400).json({message:"Unpaid Ideas"})
         }
         else{
             const wish = await Wish.findByIdAndUpdate( req.params.id, { $inc: { totalSave: 1 }})

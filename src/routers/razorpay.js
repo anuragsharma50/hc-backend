@@ -6,8 +6,6 @@ const Razorpay = require('razorpay')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 
-let user
-
 const razorpay = new Razorpay({
 	key_id: process.env.RAZORPAY_KEY_ID,
 	key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -26,7 +24,9 @@ router.post('/verification', async (req, res) => {
 	if (digest === req.headers['x-razorpay-signature']) {
 		try {
 			const prePayment = req.body.payload.payment.entity.amount/1900
+			const user = await User.findOne({order_id:req.body.payload.payment.entity.id})
 			await user.updateOne({ prePayment: user.prePayment + prePayment })
+			user.orderid = null
 	
 			await user.save()
 		} catch (error) {
@@ -53,10 +53,10 @@ router.post('/',auth, async (req, res) => {
 		payment_capture
 	}
 
-	user = req.user
-
 	try {
 		const response = await razorpay.orders.create(options)
+		req.user.payid = response.id
+		req.user.save()
 		res.json({
 			id: response.id,
 			currency: response.currency,

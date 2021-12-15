@@ -49,7 +49,6 @@ router.get('/',auth, async (req,res) => {
             res.status(401).send('Please complete payment')
         }
         else{
-
             if(!req.query.set){
                 req.query.set = 1
             }else{
@@ -99,7 +98,9 @@ router.get('/save/:id',auth,async(req,res) => {
         const alreadySaved = req.user.saved.includes(req.params.id)
 
         if(alreadySaved){
-            res.status(400).send("Already saved")
+            res.status(400).json({message: "Already saved"})
+        } else if(!req.user.paid){
+            res.status(400).json({message:"Unpaid Ideas"})
         }
         else{
             const celebration = await Celebration.findByIdAndUpdate( req.params.id, { $inc: { totalSave: 1 }})
