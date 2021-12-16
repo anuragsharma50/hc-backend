@@ -16,7 +16,7 @@ router.post('/signup', async (req,res) => {
     try{
         const user = await User.findOne({email:req.body.email})
         if(user){
-            res.status(400).json({message: "hlo"})   
+            res.status(400).json({message: "You already have an account with this email. Please log in."})   
         } else{
             const otp = referralCodes.generate({ length: 6, charset: "0123456789" })[0]
             const tempuser = new Temp({...req.body,otp})
