@@ -71,6 +71,9 @@ const userSchema = new mongoose.Schema({
     isApprover: {
         type: Boolean,
     },
+    saveAvaliable: {
+        type: Number,
+    },
     tokens: [{
         token: {
             type: String,

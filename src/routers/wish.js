@@ -49,13 +49,12 @@ router.get('/',auth, async (req,res) => {
             res.status(401).send('Please complete payment')
         }
         else{
-
-            if(!req.query.set){
-                req.query.set = 1
+            req.query.set = parseInt(req.query.set)
+            if(req.query.set === 1){
+                req.user.saveAvaliable =  3    
             }else{
-                req.query.set = parseInt(req.query.set)
+                req.user.saveAvaliable = req.user.saveAvaliable + 3
             }
-
             const wishes = await Wish.find({
                 ocassion: req.query.ocassion,
                 relation: req.query.relation, 
@@ -87,10 +86,13 @@ router.get('/save/:id',auth,async(req,res) => {
             res.status(400).json({message: "Already saved"})
         } else if(!req.user.paid){
             res.status(400).json({message:"Unpaid Ideas"})
+        }else if(req.user.saveAvaliable === 0){
+            res.status(400).json({message:"Save limit reached"})
         }
         else{
             const wish = await Wish.findByIdAndUpdate( req.params.id, { $inc: { totalSave: 1 }})
             req.user.saved = req.user.saved.concat(req.params.id)
+            req.user.saveAvaliable -= 1
             await wish.save()
             await req.user.save()
     
