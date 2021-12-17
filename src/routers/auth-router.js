@@ -207,6 +207,7 @@ router.get('/amazon/callback',
 
 // Get user data
 router.get('/getuser',async (req,res) => {
+    // console.log(res.locals.user)
     try {
         if(req.cookies.jwt){
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
@@ -220,7 +221,7 @@ router.get('/getuser',async (req,res) => {
                 user = {email,username,unverified}
             }
             res.status(200).send(user)
-        }
+        } 
         else{
             res.status(401).json({error: "Please login"})
         }
@@ -228,5 +229,66 @@ router.get('/getuser',async (req,res) => {
         res.status(401).json({error: "Something went wrong"})
     }
 })
+
+const saveuser = (req, res, next) => {
+    try {
+        console.log(res.locals) 
+        next()
+    } catch (err) {
+        console.log("error")
+    }
+}
+
+router.post('/social-login', async (req,res) => {
+    try {
+        // console.log(req.body)
+
+        let user = await User.findOne({ email: req.body.email })
+
+        if(!user){
+            const password = referralCodes.generate({})[0]
+
+            user = await new User({
+                username: req.body.username,
+                email: req.body.email,
+                password,
+                social_id: req.body.social_id,
+                social_provider: req.body.social_provider
+            }).save()
+    
+            console.log("new user created")
+        }
+        else{
+            console.log("user exists")
+
+            if(!user.social_id) {
+                res.status(400).json({message: "Something went wrong"})
+            }
+    
+            if(user.social_provider !== req.body.provider ) {
+                user.social_id = req.body.social_id
+                user.social_provider = req.body.social_provider
+                await user.save()
+            }
+        }
+
+        const token = await user.generateAuthToken()
+        
+        // res.status(200)
+        //     .cookie('jwt', token, {
+        //         // sameSite:'None', 
+        //         path: '/',
+        //         expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+        //         // httpOnly: true,
+        //         secure: true,
+        //     }).send("Successfully logged in")
+
+        res.status(200).send(token)
+
+    } catch (error) {
+        res.status(500).json({message: "Unable to signin"})
+    }
+})
+
 
 module.exports = router;
