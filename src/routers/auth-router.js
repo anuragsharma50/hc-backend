@@ -207,8 +207,8 @@ router.get('/amazon/callback',
 
 // Get user data
 router.get('/getuser',async (req,res) => {
-    // console.log(res.locals.user)
     try {
+        console.log(req.cookies)
         if(req.cookies.jwt){
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
             let user = null
@@ -230,24 +230,9 @@ router.get('/getuser',async (req,res) => {
     }
 })
 
-const saveuser = (req, res, next) => {
-    try {
-        console.log(res.locals) 
-        next()
-    } catch (err) {
-        console.log("error")
-    }
-}
-
 router.post('/social-login', async (req,res) => {
     try {
-        // console.log(req.body)
-
-        console.log("one")
-
         let user = await User.findOne({ email: req.body.email })
-
-        console.log("two")
 
         if(!user){
             const password = referralCodes.generate({})[0]
@@ -259,11 +244,8 @@ router.post('/social-login', async (req,res) => {
                 social_id: req.body.social_id,
                 social_provider: req.body.social_provider
             }).save()
-    
-            console.log("new user created")
         }
         else{
-            console.log("user exists")
 
             if(!user.social_id) {
                 user.social_id = req.body.social_id
@@ -278,20 +260,7 @@ router.post('/social-login', async (req,res) => {
             }
         }
 
-        console.log("three")
-
         const token = await user.generateAuthToken()
-
-        console.log("four")
-        
-        // res.status(200)
-        //     .cookie('jwt', token, {
-        //         // sameSite:'None', 
-        //         path: '/',
-        //         expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
-        //         // httpOnly: true,
-        //         secure: true,
-        //     }).send("Successfully logged in")
 
         res.status(200).send(token)
 
