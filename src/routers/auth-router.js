@@ -243,7 +243,11 @@ router.post('/social-login', async (req,res) => {
     try {
         // console.log(req.body)
 
+        console.log("one")
+
         let user = await User.findOne({ email: req.body.email })
+
+        console.log("two")
 
         if(!user){
             const password = referralCodes.generate({})[0]
@@ -272,7 +276,11 @@ router.post('/social-login', async (req,res) => {
             }
         }
 
+        console.log("three")
+
         const token = await user.generateAuthToken()
+
+        console.log("four")
         
         // res.status(200)
         //     .cookie('jwt', token, {
