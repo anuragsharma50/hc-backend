@@ -208,11 +208,12 @@ router.get('/amazon/callback',
 // Get user data
 router.get('/getuser',async (req,res) => {
     try {
-        console.log(req.cookies)
+        console.log(req.cookies.jwt)
         if(req.cookies.jwt){
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
             let user = null
             user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
+            console.log(user)
             if(!user){
                 const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
                 let email = temp.email
