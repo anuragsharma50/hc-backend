@@ -105,7 +105,8 @@ passport.use(new FacebookStrategy({
 passport.use(new AmazonStrategy({
     clientID: process.env.AMAZON_CLIENT_ID,
     clientSecret: process.env.AMAZON_CLIENT_SECRET,
-    callbackURL: process.env.AMAZON_CALLBACK_URL
+    callbackURL: process.env.AMAZON_CALLBACK_URL,
+    proxy: true 
   },
   async (accessToken, refreshToken, profile, done) => {
     const data = await saveSocialDetails(profile)
