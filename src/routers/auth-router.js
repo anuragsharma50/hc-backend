@@ -263,7 +263,16 @@ router.post('/social-login', async (req,res) => {
 
         const token = await user.generateAuthToken()
 
-        res.status(200).send(token)
+        res.status(201)
+            .cookie('jwt', token, {
+                sameSite:'None', 
+                path: '/',
+                expires: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+                httpOnly: true,
+                secure: true,
+            }).send(token)
+
+        // res.status(200).send(token)
 
     } catch (error) {
         res.status(500).json({message: "Unable to signin"})
