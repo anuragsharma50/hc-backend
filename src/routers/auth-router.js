@@ -266,7 +266,9 @@ router.post('/social-login', async (req,res) => {
             console.log("user exists")
 
             if(!user.social_id) {
-                res.status(400).json({message: "Something went wrong"})
+                user.social_id = req.body.social_id
+                user.social_provider = req.body.social_provider
+                await user.save()
             }
     
             if(user.social_provider !== req.body.provider ) {
