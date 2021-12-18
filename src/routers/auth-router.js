@@ -208,12 +208,10 @@ router.get('/amazon/callback',
 // Get user data
 router.get('/getuser',async (req,res) => {
     try {
-        console.log(req.cookies.jwt)
         if(req.cookies.jwt){
             const decoded = jwt.verify(req.cookies.jwt,process.env.JWT_SECRET_KEY)
             let user = null
             user = await User.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
-            console.log(user)
             if(!user){
                 const temp = await Temp.findOne({ _id: decoded._id, 'tokens.token':req.cookies.jwt})
                 let email = temp.email
@@ -224,60 +222,11 @@ router.get('/getuser',async (req,res) => {
             res.status(200).send(user)
         } 
         else{
-            res.status(401).json({error: "Please login"})
+            res.status(404).json({error: "Please login"})
         }
     } catch (e) {
-        res.status(401).json({error: "Something went wrong"})
+        res.status(400).json({error: "Something went wrong"})
     }
 })
-
-router.post('/social-login', async (req,res) => {
-    try {
-        let user = await User.findOne({ email: req.body.email })
-
-        if(!user){
-            const password = referralCodes.generate({})[0]
-
-            user = await new User({
-                username: req.body.username,
-                email: req.body.email,
-                password,
-                social_id: req.body.social_id,
-                social_provider: req.body.social_provider
-            }).save()
-        }
-        else{
-
-            if(!user.social_id) {
-                user.social_id = req.body.social_id
-                user.social_provider = req.body.social_provider
-                await user.save()
-            }
-    
-            if(user.social_provider !== req.body.provider ) {
-                user.social_id = req.body.social_id
-                user.social_provider = req.body.social_provider
-                await user.save()
-            }
-        }
-
-        const token = await user.generateAuthToken()
-
-        res.status(201)
-            .cookie('jwt', token, {
-                sameSite:'None', 
-                path: '/',
-                expires: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
-                httpOnly: true,
-                secure: true,
-            }).send(token)
-
-        // res.status(200).send(token)
-
-    } catch (error) {
-        res.status(500).json({message: "Unable to signin"})
-    }
-})
-
 
 module.exports = router;

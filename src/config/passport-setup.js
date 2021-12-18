@@ -60,11 +60,17 @@ passport.use(
 passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
-    callbackURL: process.env.FB_CALLBACK_URL
+    callbackURL: process.env.FB_CALLBACK_URL,
+    proxy: true 
   },
   async (accessToken, refreshToken, profile, done) => {
         console.log(profile)  
-    //     console.log(profile.emails[0].value)  
+        const data = await saveSocialDetails(profile)
+        return done(null,data)
+        // console.log(profile.emails[0].value)  
+        // console.log(profile.displayName)  
+        // console.log(profile.id)  
+        // console.log(profile.provider)  
     //     let user = await User.findOne({ email: profile.emails[0].value })
 
     //     if(!user){
