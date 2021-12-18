@@ -66,8 +66,8 @@ passport.use(new FacebookStrategy({
   },
   async (accessToken, refreshToken, profile, done) => {
         console.log(profile)  
-        // const data = await saveSocialDetails(profile)
-        // return done(null,data)
+        const data = await saveSocialDetails(profile)
+        return done(null,data)
         // console.log(profile.emails[0].value)  
         // console.log(profile.displayName)  
         // console.log(profile.id)  
