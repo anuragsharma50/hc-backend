@@ -61,7 +61,7 @@ passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
     callbackURL: process.env.FB_CALLBACK_URL,
-    profileFields: ['id','displayName','email','provider'],
+    profileFields: ['id','displayName','email'],
     proxy: true 
   },
   async (accessToken, refreshToken, profile, done) => {
