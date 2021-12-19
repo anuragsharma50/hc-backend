@@ -34,7 +34,7 @@ router.get('/count',auth, async (req,res) => {
             maxAge: {$gte: req.query.age},
             gender: { $in: [ req.query.gender,null ] },
             budget: {$lte: req.query.budget}, 
-            approvedStatus: "Approved"
+            approvalStatus: "Approved"
         }).skip((req.query.set - 1)*25 ).limit(25)
 
         res.send({ideasCount: wishesCount})
@@ -62,7 +62,7 @@ router.get('/',auth, async (req,res) => {
                 maxAge: {$gte: req.query.age},
                 gender: { $in: [ req.query.gender,null ] },
                 budget: {$lte: req.query.budget},
-                approvedStatus: "Approved"
+                approvalStatus: "Approved"
             },{title:1, description:1, _id:1}
             ).skip((req.query.set - 1)*25 ).limit(25).sort({ gender: -1 })
 
