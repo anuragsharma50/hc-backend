@@ -24,7 +24,7 @@ router.post('/verification', async (req, res) => {
 	if (digest === req.headers['x-razorpay-signature']) {
 		try {
 			const prePayment = req.body.payload.payment.entity.amount/1900
-			const user = await User.findOne({order_id:req.body.payload.payment.entity.id})
+			const user = await User.findOne({orderid:req.body.payload.payment.entity.order_id})
 			await user.updateOne({ prePayment: user.prePayment + prePayment })
 			user.orderid = null
 	
@@ -55,7 +55,7 @@ router.post('/',auth, async (req, res) => {
 
 	try {
 		const response = await razorpay.orders.create(options)
-		req.user.payid = response.id
+		req.user.orderid = response.id
 		req.user.save()
 		res.json({
 			id: response.id,
