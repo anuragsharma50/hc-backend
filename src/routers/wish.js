@@ -132,15 +132,26 @@ router.get('/save/:id',auth,async(req,res) => {
 
         if(alreadySaved){
             res.status(400).json({message: "Already saved"})
-        } else if(!req.user.paid){
-            res.status(400).json({message:"Unpaid Ideas"})
-        }else if(req.user.saveAvaliable === 0){
+        } 
+        // else if(!req.user.paid){
+        //     res.status(400).json({message:"Unpaid Ideas"})
+        // }
+        else if(req.user.saveAvaliable === 0){
             res.status(400).json({message:"Save limit reached"})
         }
         else{
             const wish = await Wish.findByIdAndUpdate( req.params.id, { $inc: { totalSave: 1 }})
             req.user.saved = req.user.saved.concat(req.params.id)
             req.user.saveAvaliable -= 1
+
+            // pay to writer if user is using paid version
+            if(req.user.paid){
+                const user = await User.findById(celebration.creator.toString())
+                user.earning = user.earning + 2.5
+
+                await user.save()
+            } 
+
             await wish.save()
             await req.user.save()
     

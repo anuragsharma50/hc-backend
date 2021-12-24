@@ -19,6 +19,54 @@ router.post('/',auth, async (req,res) => {
     }
 })
 
+router.get('/one-idea',auth,async (req,res) => {
+    try {
+        const wishes = await Wish.find({
+            ocassion: req.query.ocassion,
+            relation: req.query.relation, 
+            minAge: {$lte: req.query.age},
+            maxAge: {$gte: req.query.age},
+            gender: { $in: [ req.query.gender,null ] },
+            budget: {$lte: req.query.budget},
+            // approvalStatus: "Approved"
+        },
+        {title:1, description:1, _id:1}
+        ).limit(40).sort({ gender: -1 })
+
+        if(wishes.length > 0){
+            const wish = wishes[Math.floor(Math.random() * wishes.length)]
+            res.send(wish)
+        } else{
+            res.send()
+        }
+
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
+router.get('/good-idea/:id',auth,async(req,res) => {
+    try {
+        const wish = await Wish.findByIdAndUpdate(req.params.id,{ $inc: { good: 1 } })
+        await wish.save()
+
+        res.send()
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
+router.get('/bad-idea/:id',auth,async(req,res) => {
+    try {
+        const wish = await Wish.findByIdAndUpdate(req.params.id,{ $inc: { bad: 1 } })
+        await wish.save()
+
+        res.send()
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
 router.get('/count',auth, async (req,res) => {
     try {
         if(!req.query.set){
@@ -84,15 +132,26 @@ router.get('/save/:id',auth,async(req,res) => {
 
         if(alreadySaved){
             res.status(400).json({message: "Already saved"})
-        } else if(!req.user.paid){
-            res.status(400).json({message:"Unpaid Ideas"})
-        } else if(req.user.saveAvaliable === 0){
+        }
+        //  else if(!req.user.paid){
+        //     res.status(400).json({message:"Unpaid Ideas"})
+        // } 
+        else if(req.user.saveAvaliable === 0){
             res.status(400).json({message:"Save limit reached"})
         }
         else{
             const gift = await Gift.findByIdAndUpdate( req.params.id, { $inc: { totalSave: 1 }})
             req.user.saved = req.user.saved.concat(req.params.id)
             req.user.saveAvaliable -= 1
+
+            // pay to writer if user is using paid version
+            if(req.user.paid){
+                const user = await User.findById(celebration.creator.toString())
+                user.earning = user.earning + 2.5
+
+                await user.save()
+            } 
+
             await gift.save()
             await req.user.save()
     
