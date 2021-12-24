@@ -23,7 +23,7 @@ router.post('/verification', async (req, res) => {
 
 	if (digest === req.headers['x-razorpay-signature']) {
 		try {
-			const prePayment = req.body.payload.payment.entity.amount/1900
+			const prePayment = req.body.payload.payment.entity.amount/900
 			const user = await User.findOne({orderid:req.body.payload.payment.entity.order_id})
 			await user.updateOne({ prePayment: user.prePayment + prePayment })
 			user.orderid = null
@@ -43,7 +43,7 @@ router.post('/verification', async (req, res) => {
 router.post('/',auth, async (req, res) => {
 
 	const payment_capture = 1
-	const amount = 19*req.body.set
+	const amount = 9*req.body.set
 	const currency = 'INR'
 
 	const options = {

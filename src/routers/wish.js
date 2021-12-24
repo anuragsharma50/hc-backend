@@ -19,6 +19,54 @@ router.post('/',auth, async (req,res) => {
     }
 })
 
+router.get('/one-idea',auth,async (req,res) => {
+    try {
+        const wishes = await Wish.find({
+            ocassion: req.query.ocassion,
+            relation: req.query.relation, 
+            minAge: {$lte: req.query.age},
+            maxAge: {$gte: req.query.age},
+            gender: { $in: [ req.query.gender,null ] },
+            budget: {$lte: req.query.budget},
+            // approvalStatus: "Approved"
+        },
+        {title:1, description:1, _id:1}
+        ).limit(40).sort({ gender: -1 })
+
+        if(wishes.length > 0){
+            const wish = wishes[Math.floor(Math.random() * wishes.length)]
+            res.send(wish)
+        } else{
+            res.send()
+        }
+
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
+router.get('/good-idea/:id',auth,async(req,res) => {
+    try {
+        const wish = await Wish.findByIdAndUpdate(req.params.id,{ $inc: { good: 1 } })
+        await wish.save()
+
+        res.send()
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
+router.get('/bad-idea/:id',auth,async(req,res) => {
+    try {
+        const wish = await Wish.findByIdAndUpdate(req.params.id,{ $inc: { bad: 1 } })
+        await wish.save()
+
+        res.send()
+    } catch (error) {
+        res.status(500).send()
+    }
+})
+
 router.get('/count',auth, async (req,res) => {
     try {
         if(!req.query.set){
@@ -35,7 +83,7 @@ router.get('/count',auth, async (req,res) => {
             gender: { $in: [ req.query.gender,null ] },
             budget: {$lte: req.query.budget}, 
             approvalStatus: "Approved"
-        }).skip((req.query.set - 1)*25 ).limit(25)
+        }).skip((req.query.set - 1)*15 ).limit(15)
 
         res.send({ideasCount: wishesCount})
     } catch (error) {
@@ -64,7 +112,7 @@ router.get('/',auth, async (req,res) => {
                 budget: {$lte: req.query.budget},
                 approvalStatus: "Approved"
             },{title:1, description:1, _id:1}
-            ).skip((req.query.set - 1)*25 ).limit(25).sort({ gender: -1 })
+            ).skip((req.query.set - 1)*15 ).limit(15).sort({ gender: -1 })
 
             if(wishes.length > 0) {
                 req.user.payment = false

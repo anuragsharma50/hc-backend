@@ -48,6 +48,12 @@ const wishSchema = new mongoose.Schema({
             required: true,
         }]
     },
+    good: {
+        type: Number,
+    },
+    bad: {
+        type: Number,
+    },
     totalSave: {
         type: Number,
         default: 0
