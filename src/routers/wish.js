@@ -28,7 +28,7 @@ router.get('/one-idea',auth,async (req,res) => {
             maxAge: {$gte: req.query.age},
             gender: { $in: [ req.query.gender,null ] },
             budget: {$lte: req.query.budget},
-            // approvalStatus: "Approved"
+            approvalStatus: "Approved"
         },
         {title:1, description:1, _id:1}
         ).limit(40).sort({ gender: -1 })
@@ -37,7 +37,7 @@ router.get('/one-idea',auth,async (req,res) => {
             const wish = wishes[Math.floor(Math.random() * wishes.length)]
             res.send(wish)
         } else{
-            res.send()
+            res.send({title:"Not Avaliable",description:"Not Avaliable"})
         }
 
     } catch (error) {
@@ -147,7 +147,7 @@ router.get('/save/:id',auth,async(req,res) => {
             // pay to writer if user is using paid version
             if(req.user.paid){
                 const user = await User.findById(celebration.creator.toString())
-                user.earning = user.earning + 2.5
+                user.earning = user.earning + 2
 
                 await user.save()
             } 
@@ -192,13 +192,22 @@ router.patch('/:id',auth, async (req,res) => {
 
 router.delete('/:id',auth, async (req,res) =>{
     try {
-        const wish = await Wish.findOneAndDelete({ _id:req.params.id, creator:req.user._id })
+        const wish = await Wish.findOne({ _id:req.params.id, creator:req.user._id })
+
+        if(wish.approvalStatus === 'Approved'){
+            req.user.earning -= 1
+        }
+
+        wish.delete()
+        
+        wish.save()
+        req.user.save()
 
         if(!wish){
             res.status(404).send()
         }
         else{
-            res.send(wish)
+            res.send("Idea deleted successfully")
         }
     } catch (error) {
         res.status(500).send(error)
