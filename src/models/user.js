@@ -38,11 +38,11 @@ const userSchema = new mongoose.Schema({
     },
     earning: {
         type: Number,
-        default: 0,
+        // default: 0,
     },
     prePayment:{
         type: Number,
-        default: 0,
+        // default: 0,
     },
     payment:{
         type: Boolean,
@@ -54,7 +54,7 @@ const userSchema = new mongoose.Schema({
     },
     free: {
         type: Number,
-        default: 1,
+        default: 200,
     },
     paid: {
         type: Boolean,
@@ -116,6 +116,9 @@ userSchema.methods.toJSON = function () {
     delete userObject.earning
     delete userObject.currency
     delete userObject.referralcode
+    delete userObject.referred
+    delete userObject.saveAvaliable
+    delete userObject.payment
 
     return userObject
 }

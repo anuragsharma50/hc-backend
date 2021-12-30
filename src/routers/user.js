@@ -245,17 +245,10 @@ router.post('/capturePaypalAmount',auth,async(req,res) => {
 
 router.get('/payment',auth,async(req,res) => {
     try{
-        let referralcode
-        if(!req.user.referralcode){
-            const code = referralCodes.generate({
-                length: 6
-            })
-            referralcode = code[0]
-        }
         if(req.user.free > 0) {
             free = req.user.free - 1
             paid = false
-            await req.user.updateOne({ referralcode,referred:true,payment:true,free,paid })
+            await req.user.updateOne({ payment:true,free,paid })
 
             await req.user.save()
             res.send()
@@ -263,7 +256,7 @@ router.get('/payment',auth,async(req,res) => {
         else if(req.user.prePayment > 0){
             prePayment = req.user.prePayment - 1
             paid = true
-            await req.user.updateOne({ referralcode,payment:true,referred:true,prePayment,paid })
+            await req.user.updateOne({ payment:true,prePayment,paid })
 
             await req.user.save()
             res.send()
