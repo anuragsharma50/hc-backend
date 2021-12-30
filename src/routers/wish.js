@@ -83,7 +83,7 @@ router.get('/count',auth, async (req,res) => {
             gender: { $in: [ req.query.gender,null ] },
             budget: {$lte: req.query.budget}, 
             approvalStatus: "Approved"
-        }).skip((req.query.set - 1)*15 ).limit(15)
+        }).skip((req.query.set - 1)*15 ).limit(1)
 
         res.send({ideasCount: wishesCount})
     } catch (error) {
@@ -98,11 +98,6 @@ router.get('/',auth, async (req,res) => {
         }
         else{
             req.query.set = parseInt(req.query.set)
-            if(req.query.set === 1){
-                req.user.saveAvaliable =  3    
-            }else{
-                req.user.saveAvaliable = req.user.saveAvaliable + 3
-            }
             const wishes = await Wish.find({
                 ocassion: req.query.ocassion,
                 relation: req.query.relation, 
@@ -132,25 +127,10 @@ router.get('/save/:id',auth,async(req,res) => {
 
         if(alreadySaved){
             res.status(400).json({message: "Already saved"})
-        } 
-        // else if(!req.user.paid){
-        //     res.status(400).json({message:"Unpaid Ideas"})
-        // }
-        else if(req.user.saveAvaliable === 0){
-            res.status(400).json({message:"Save limit reached"})
         }
         else{
             const wish = await Wish.findByIdAndUpdate( req.params.id, { $inc: { totalSave: 1 }})
             req.user.saved = req.user.saved.concat(req.params.id)
-            req.user.saveAvaliable -= 1
-
-            // pay to writer if user is using paid version
-            if(req.user.paid){
-                const user = await User.findById(celebration.creator.toString())
-                user.earning = user.earning + 2
-
-                await user.save()
-            } 
 
             await wish.save()
             await req.user.save()
@@ -192,16 +172,7 @@ router.patch('/:id',auth, async (req,res) => {
 
 router.delete('/:id',auth, async (req,res) =>{
     try {
-        const wish = await Wish.findOne({ _id:req.params.id, creator:req.user._id })
-
-        if(wish.approvalStatus === 'Approved'){
-            req.user.earning -= 1
-        }
-
-        wish.delete()
-        
-        wish.save()
-        req.user.save()
+        const wish = await Wish.findOneAndDelete({ _id:req.params.id, creator:req.user._id })
 
         if(!wish){
             res.status(404).send()

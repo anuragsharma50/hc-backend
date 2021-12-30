@@ -110,6 +110,12 @@ userSchema.methods.toJSON = function () {
     delete userObject.social_provider
     delete userObject._id
     delete userObject.orderid
+    delete userObject.paid
+    delete userObject.prePayment
+    delete userObject.free
+    delete userObject.earning
+    delete userObject.currency
+    delete userObject.referralcode
 
     return userObject
 }

@@ -163,11 +163,11 @@ router.patch('/approveIdea',auth, async (req,res) => {
             })
 
             const user = await User.findById(idea.creator.toString())
-            user.free = user.free + 1
-            user.earning = user.earning + 1
+            // user.free = user.free + 1
+            // user.earning = user.earning + 1
 
-            await user.save()
-            await idea.save()
+            // await user.save()
+            // await idea.save()
             await approver.save()
 
             const msg = {
