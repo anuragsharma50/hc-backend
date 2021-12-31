@@ -45,7 +45,7 @@ router.get('/one-idea',auth,async (req,res) => {
     }
 })
 
-router.get('/good-idea/:id',auth,async(req,res) => {
+router.get('/good-idea/:id',async(req,res) => {
     try {
         const wish = await Gift.findByIdAndUpdate(req.params.id,{ $inc: { good: 1 } })
         await wish.save()
@@ -56,7 +56,7 @@ router.get('/good-idea/:id',auth,async(req,res) => {
     }
 })
 
-router.get('/bad-idea/:id',auth,async(req,res) => {
+router.get('/bad-idea/:id',async(req,res) => {
     try {
         const wish = await Gift.findByIdAndUpdate(req.params.id,{ $inc: { bad: 1 } })
         await wish.save()
@@ -67,7 +67,7 @@ router.get('/bad-idea/:id',auth,async(req,res) => {
     }
 })
 
-router.get('/count',auth, async (req,res) => {
+router.get('/count', async (req,res) => {
     try {
         if(!req.query.set){
             req.query.set = 1
@@ -91,31 +91,21 @@ router.get('/count',auth, async (req,res) => {
     }
 })
 
-router.get('/',auth, async (req,res) => {
+router.get('/', async (req,res) => {
     try {
-        if(!req.user.payment) {
-            res.status(401).send('Please complete payment')
-        }
-        else{
-            req.query.set = parseInt(req.query.set)
-            const wishes = await Gift.find({
-                ocassion: req.query.ocassion,
-                relation: req.query.relation, 
-                minAge: {$lte: req.query.age},
-                maxAge: {$gte: req.query.age},
-                gender: { $in: [ req.query.gender,null ] },
-                budget: {$lte: req.query.budget},
-                approvalStatus: "Approved"
-            },{title:1, description:1, _id:1}
-            ).skip((req.query.set - 1)*15 ).limit(15).sort({ gender: -1 })
+        req.query.set = parseInt(req.query.set)
+        const wishes = await Gift.find({
+            ocassion: req.query.ocassion,
+            relation: req.query.relation, 
+            minAge: {$lte: req.query.age},
+            maxAge: {$gte: req.query.age},
+            gender: { $in: [ req.query.gender,null ] },
+            budget: {$lte: req.query.budget},
+            approvalStatus: "Approved"
+        },{title:1, description:1, _id:1}
+        ).skip((req.query.set - 1)*15 ).limit(15).sort({ gender: -1 })
 
-            if(wishes.length > 0) {
-                req.user.payment = false
-                await req.user.save()
-            }
-
-            res.send(wishes)
-        }
+        res.send(wishes)
     } catch (error) {
         res.status(500).send()
     }
@@ -142,33 +132,33 @@ router.get('/save/:id',auth,async(req,res) => {
     }
 })
 
-router.patch('/:id',auth, async (req,res) => {
+// router.patch('/:id',auth, async (req,res) => {
 
-    const updates = Object.keys(req.body)
-    const acceptedUpdates = ['title','description','minAge','maxAge','relation','ocassion','gender']
+//     const updates = Object.keys(req.body)
+//     const acceptedUpdates = ['title','description','minAge','maxAge','relation','ocassion','gender']
 
-    const isValidOperation = updates.every((update) => acceptedUpdates.includes(update))
+//     const isValidOperation = updates.every((update) => acceptedUpdates.includes(update))
 
-    if(!isValidOperation){
-        res.status(400).send({error:'Invalid Updates!'})
-    }
+//     if(!isValidOperation){
+//         res.status(400).send({error:'Invalid Updates!'})
+//     }
 
-    try {
-        const gift = await Gift.findOne({ _id:req.params.id, creator: req.user._id })
+//     try {
+//         const gift = await Gift.findOne({ _id:req.params.id, creator: req.user._id })
 
-        if(!gift){
-            res.status(404).send()
-        }
+//         if(!gift){
+//             res.status(404).send()
+//         }
 
-        updates.forEach(update => gift[update] = req.body[update])
-        await gift.save()
-        res.send(gift)
+//         updates.forEach(update => gift[update] = req.body[update])
+//         await gift.save()
+//         res.send(gift)
 
-    } catch (error) {
-        res.status(400).send(error)
-    }
+//     } catch (error) {
+//         res.status(400).send(error)
+//     }
 
-})
+// })
 
 router.delete('/:id',auth, async (req,res) =>{
     try {
