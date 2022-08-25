@@ -25,7 +25,7 @@ router.post('/signup', async (req,res) => {
 
             const msg = {
                 to: tempuser.email,
-                from: 'no-reply@happiecelebrations.com',
+                from: 'happiecelebrations@gmail.com',
                 subject: 'Happie Celebration | Verification code',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',
@@ -80,7 +80,7 @@ router.post('/signin', async (req,res) => {
 
             const msg = {
                 to: tempuser.email,
-                from: 'no-reply@happiecelebrations.com',
+                from: 'happiecelebrations@gmail.com',
                 subject: 'Happie Celebration | Verification code',
                 text: 'Hello from Happie Celebrations',
                 html: '<p>Hello from Happie Celebrations</p>',
